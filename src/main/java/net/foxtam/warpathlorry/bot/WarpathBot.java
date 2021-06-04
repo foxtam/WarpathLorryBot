@@ -1,7 +1,8 @@
-package net.foxtam.bot;
+package net.foxtam.warpathlorry.bot;
 
-import net.foxtam.Bot;
-import net.foxtam.KeyConfig;
+
+import net.foxtam.foxclicker.Bot;
+import net.foxtam.foxclicker.KeyConfig;
 
 public class WarpathBot extends Bot {
     public WarpathBot() {
@@ -10,6 +11,6 @@ public class WarpathBot extends Bot {
 
     @Override
     protected void action() {
-        
+        System.out.println("Hello!");
     }
 }

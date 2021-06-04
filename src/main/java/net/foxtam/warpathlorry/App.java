@@ -1,13 +1,12 @@
-package net.foxtam;
+package net.foxtam.warpathlorry;
 
-import net.foxtam.bot.WarpathBot;
+import net.foxtam.warpathlorry.bot.WarpathBot;
 
 /**
  * Hello world!
  */
 public class App {
     public static void main(String[] args) {
-        System.out.println("Hello World!");
         new WarpathBot().run();
     }
 }
