@@ -148,7 +148,7 @@ public class WarpathBot extends Bot {
     }
 
     private void orderProduct() {
-        while (finder.withInColor(true).isImageVisible(whiteSlash)) {
+        while (finder.withColor(true).isImageVisible(whiteSlash)) {
             finder.leftClickOn(productionGreenButton);
         }
     }
