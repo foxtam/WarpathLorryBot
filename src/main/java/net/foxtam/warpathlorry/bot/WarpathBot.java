@@ -50,21 +50,22 @@ public class WarpathBot extends Bot {
 
 
     private final Random random = new Random();
-    private final Finder finder = new Finder(4.0, 0.90, false);
+    private final Finder finder = new Finder(4.0, 0.88, false);
+    private final double pauseInMinutes;
     private Direction lorryDragDirection = Direction.LEFT;
 
-    public WarpathBot() {
+    public WarpathBot(double pauseInMinutes) {
         super(KeyConfig.getDefault(), Window.getByTitle("NoxPlayer"));
+        this.pauseInMinutes = pauseInMinutes;
     }
 
     @Override
     protected void action() {
+        //noinspection InfiniteLoopStatement
         while (true) {
             lorryBypass();
-            sleep(3);
-
             factoryBypass();
-            sleep(3);
+            sleep(pauseInMinutes * 60);
         }
     }
 
@@ -102,7 +103,7 @@ public class WarpathBot extends Bot {
         for (int i = 0; i < 2; i++) {
             if (!finder.isImageVisible(lorry)) {
                 finder.leftClickOn(lorryMainButton);
-                sleep(1); 
+                sleep(1);
             }
         }
         finder.waitForImage(lorry);

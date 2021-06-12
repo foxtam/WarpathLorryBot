@@ -19,7 +19,7 @@ public class BotProperties {
             properties.load(Files.newBufferedReader(propertiesPath));
             return properties.getProperty(key);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new CantReadPropertiesException("Can't read properties file: " + propertiesPath, e);
         }
     }
 

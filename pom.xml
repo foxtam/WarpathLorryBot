@@ -85,7 +85,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>net.foxtam.warpathlorry.ConsoleApp</mainClass>
+                            <mainClass>net.foxtam.warpathlorry.SwingApp</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

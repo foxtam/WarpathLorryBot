@@ -4,6 +4,6 @@ import net.foxtam.warpathlorry.bot.WarpathBot;
 
 public class ConsoleApp {
     public static void main(String[] args) {
-        new WarpathBot().run();
+        new WarpathBot(0.1).run();
     }
 }
