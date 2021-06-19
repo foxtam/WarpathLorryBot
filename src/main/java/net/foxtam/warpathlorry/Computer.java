@@ -7,10 +7,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class IDCalculator {
+public class Computer {
     private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.US_ASCII);
 
-    public static String getCurrentMachineID() {
+    public static ComputerID getID() {
+        return new ComputerID(getCurrentMachineID());
+    }
+
+    private static String getCurrentMachineID() {
         try {
             MessageDigest instance = MessageDigest.getInstance("MD5");
             instance.update(getUUID().getBytes(StandardCharsets.UTF_8));
@@ -46,7 +50,6 @@ public class IDCalculator {
 
     private static String tryExecuteCmd(String command) throws IOException {
         StringBuilder output = new StringBuilder();
-
         Process serNumProcess = Runtime.getRuntime().exec(command);
         BufferedReader sNumReader = new BufferedReader(new InputStreamReader(serNumProcess.getInputStream()));
 

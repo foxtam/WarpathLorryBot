@@ -1,31 +1,18 @@
 package net.foxtam.warpathlorry;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionListener;
-import java.io.*;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
+import java.io.IOException;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Map;
-import java.util.Optional;
 
 import static net.foxtam.foxclicker.GlobalLogger.enter;
 import static net.foxtam.foxclicker.GlobalLogger.exit;
 
 public class SwingApp extends JFrame {
-
-    private static final boolean LOCAL_TEST = false;
 
     static {
         try {
@@ -35,7 +22,6 @@ public class SwingApp extends JFrame {
         }
     }
 
-    private final String clientID = IDCalculator.getCurrentMachineID();
     private final JButton runButton;
     private final JLabel infoLabel;
     private final JTextField pauseTextField;
@@ -80,14 +66,14 @@ public class SwingApp extends JFrame {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(0, 1, 10, 10));
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        
+
         JPanel idPanel = new JPanel();
         idPanel.setLayout(new GridLayout(0, 1, 10, 10));
 
         infoLabel = new JLabel();
         panel.add(infoLabel);
 
-        JLabel IDLabel = new JLabel("ID: " + clientID);
+        JLabel IDLabel = new JLabel("ID: " + Computer.getID());
         idPanel.add(IDLabel);
 
         copyIdButton = new JButton();
@@ -146,7 +132,7 @@ public class SwingApp extends JFrame {
     private ActionListener getClipboardListener() {
         return e -> {
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            StringSelection selection = new StringSelection(clientID);
+            StringSelection selection = new StringSelection(Computer.getID().toString());
             clipboard.setContents(selection, selection);
         };
     }
@@ -188,20 +174,12 @@ public class SwingApp extends JFrame {
 
     private Runnable permissionCheck() {
         return () -> {
-            Optional<LocalDate> optionalDate = getClientExpirationDate(clientID);
-
-            if (optionalDate.isPresent()) {
-                LocalDate expirationDate = optionalDate.get();
-                LocalDate now = getGlobalTime();
-                if (now.isBefore(expirationDate)) {
-                    initRunnableGUI(expirationDate);
-                } else {
-                    initExpiredDateGUI(expirationDate);
-                }
-            } else {
-                initNoRunGUI();
+            try {
+                tryInitGUI();
+            } catch (IOException e) {
+                showErrorMessage(e.getMessage());
+                System.exit(1);
             }
-            runButton.setText(runButtonTitle);
         };
     }
 
@@ -230,33 +208,27 @@ public class SwingApp extends JFrame {
         runButton.setText(runButtonTitle);
     }
 
-    private Optional<LocalDate> getClientExpirationDate(String clientID) {
-        try {
-            return tryGetClientExpirationDate(clientID);
-        } catch (ConnectException e) {
-            showErrorMessage("No server connection!");
-            throw new RuntimeException(e);
-        } catch (Exception e) {
-            showErrorMessage(e.getMessage());
-            throw new RuntimeException(e);
+    private void tryInitGUI() throws IOException {
+        Registration registration = new Registration();
+        if (registration.hasRegistration()) {
+            LocalDate expirationLicenseDate = registration.getExpirationLicenseDate();
+            if (registration.isLicenseValid()) {
+                initRunnableGUI(expirationLicenseDate);
+            } else {
+                initExpiredDateGUI(expirationLicenseDate);
+            }
+        } else {
+            initNoRunGUI();
         }
+        runButton.setText(runButtonTitle);
     }
 
-    private LocalDate getGlobalTime() {
-        try {
-            URL url = new URL("https://currentmillis.com/time/minutes-since-unix-epoch.php");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            long minutes = Long.parseLong(in.readLine());
-            in.close();
-            con.disconnect();
-            Instant instant = Instant.ofEpochSecond(minutes * 60);
-            return LocalDate.ofInstant(instant, ZoneId.of("UTC+0"));
-        } catch (IOException e) {
-            showErrorMessage(e.getMessage());
-            throw new RuntimeException(e);
-        }
+    private void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(
+              null,
+              message,
+              "Error",
+              JOptionPane.ERROR_MESSAGE);
     }
 
     private void initRunnableGUI(LocalDate expirationDate) {
@@ -287,39 +259,5 @@ public class SwingApp extends JFrame {
               JOptionPane.WARNING_MESSAGE);
         infoLabel.setForeground(Color.RED);
         runButton.setEnabled(false);
-    }
-
-    private void showErrorMessage(String message) {
-        JOptionPane.showMessageDialog(
-              null,
-              message,
-              "Error",
-              JOptionPane.ERROR_MESSAGE);
-    }
-
-    private Optional<LocalDate> tryGetClientExpirationDate(String clientID) throws IOException {
-        Gson gson = new Gson();
-
-        java.lang.reflect.Type type =
-              new TypeToken<Map<String, String>>() {
-              }.getType();
-
-        Map<String, String> map =
-              gson.fromJson(
-                    new InputStreamReader(getClientsFileInputStream(), StandardCharsets.UTF_8),
-                    type);
-
-        return Optional.ofNullable(map.get(clientID)).map(LocalDate::parse);
-    }
-
-    private InputStream getClientsFileInputStream() throws IOException {
-        if (LOCAL_TEST) {
-            String clientsFile = "warpath_clients.json";
-            return new BufferedInputStream(new FileInputStream(clientsFile));
-        } else {
-            String clientsFile = "https://garantmarket.net/warpath/warpath_clients.json";
-            URL url = new URL(clientsFile);
-            return new BufferedInputStream(url.openStream());
-        }
     }
 }
