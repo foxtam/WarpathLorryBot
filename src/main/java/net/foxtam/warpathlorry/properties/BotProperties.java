@@ -1,4 +1,4 @@
-package net.foxtam.warpathlorry;
+package net.foxtam.warpathlorry.properties;
 
 import java.io.IOException;
 import java.nio.file.Files;
