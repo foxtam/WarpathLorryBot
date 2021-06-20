@@ -1,10 +1,7 @@
 package net.foxtam.warpathlorry.bot;
 
 
-import net.foxtam.foxclicker.Bot;
-import net.foxtam.foxclicker.Image;
-import net.foxtam.foxclicker.KeyConfig;
-import net.foxtam.foxclicker.Window;
+import net.foxtam.foxclicker.*;
 
 import java.util.List;
 import java.util.Random;
@@ -29,6 +26,7 @@ public class WarpathBot extends Bot implements Runnable {
         enter();
         Lorries lorries = new Lorries();
         Factory factory = new Factory();
+
         //noinspection InfiniteLoopStatement
         while (true) {
             lorries.run();
@@ -38,8 +36,6 @@ public class WarpathBot extends Bot implements Runnable {
     }
 
     class Lorries {
-        private final Random random = new Random();
-        
         final Image lorryMainButton = Image.loadFromResource("/images/lorry_main_button.png");
         final Image deployButton = Image.loadFromResource("/images/deploy_button.png");
         final Image lorry = Image.loadFromResource("/images/lorry.png");
@@ -53,6 +49,7 @@ public class WarpathBot extends Bot implements Runnable {
         final Image plusLvlButton = Image.loadFromResource("/images/plus_lvl_button.png");
         final Image minusLvlButton = Image.loadFromResource("/images/minus_lvl_button.png");
         final Image noDetectedNearby = Image.loadFromResource("/images/no_detected_nearby.png");
+        private final Random random = new Random();
 
         public void run() {
             lorryBypass();
@@ -95,10 +92,10 @@ public class WarpathBot extends Bot implements Runnable {
             while (finder.withTime(1).isImageVisible(noDetectedNearby)) {
                 finder.leftClickOn(minusLvlButton);
                 finder.leftClickOn(searchButton);
-                sleep(2);
+                sleep(1.5);
             }
 
-            sleep(2);
+            sleep(1);
             leftClickAt(getWindowCenterPoint().shift(-20, 20));
             finder.leftClickOn(dispatchLorryButton);
             exit();
@@ -215,9 +212,16 @@ public class WarpathBot extends Bot implements Runnable {
         private void orderProduct() {
             enter();
             if (finder.isImageVisible(produceGreenButton)) {
-                while (finder.withColor(true).withTolerance(0.91).isImageVisible(whiteSlash)) {
-                    finder.leftClickOn(produceGreenButton);
-                    sleep(0.4);
+                ScreenPoint productGreenButtonPoint = finder.getCenterPointOf(produceGreenButton);
+                while (finder
+                      .withColor(true)
+                      .withTolerance(0.91)
+                      .withTime(2)
+                      .isImageVisible(whiteSlash)) {
+                    for (int i = 0; i < 5; i++) {
+                        leftClickAt(productGreenButtonPoint);
+                        sleep(0.02);
+                    }
                 }
             }
             exit();
