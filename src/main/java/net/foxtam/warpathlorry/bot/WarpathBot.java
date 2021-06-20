@@ -1,7 +1,10 @@
 package net.foxtam.warpathlorry.bot;
 
 
-import net.foxtam.foxclicker.*;
+import net.foxtam.foxclicker.Bot;
+import net.foxtam.foxclicker.Image;
+import net.foxtam.foxclicker.KeyConfig;
+import net.foxtam.foxclicker.Window;
 
 import java.util.List;
 import java.util.Random;
@@ -32,6 +35,7 @@ public class WarpathBot extends Bot implements Runnable {
     final Image lvlOnRight = Image.loadFromResource("/images/lvl_on_right.png");
     final Image plusLvlButton = Image.loadFromResource("/images/plus_lvl_button.png");
     final Image minusLvlButton = Image.loadFromResource("/images/minus_lvl_button.png");
+    final Image noDetectedNearby = Image.loadFromResource("/images/no_detected_nearby.png");
 
     final List<Image[]> workshops =
           List.of(
@@ -56,7 +60,6 @@ public class WarpathBot extends Bot implements Runnable {
     private final Random random = new Random();
     private final Finder finder = new Finder(4.0, 0.85, false);
     private final double pauseInMinutes;
-    private Direction lorryDragDirection = Direction.LEFT;
 
     public WarpathBot(double pauseInMinutes, Runnable onStop, Runnable onPause) {
         super(KeyConfig.getDefault(), Window.getByTitle("NoxPlayer"), onStop, onPause);
@@ -80,9 +83,9 @@ public class WarpathBot extends Bot implements Runnable {
         enter();
         while (true) {
             openBottomLorryWindow();
-            Image button = finder.waitForAnyImageSure(deployButton, recallLorryButton);
+            Image button = finder.waitForAnyImage(deployButton, recallLorryButton);
             if (button == deployButton) {
-                sendLorry();
+                sendSleepingLorry();
             } else if (button == recallLorryButton) {
                 hideBottomLorryWindow();
                 exit();
@@ -97,11 +100,11 @@ public class WarpathBot extends Bot implements Runnable {
         sleep(2.0);
         clickOnFactoryBuilding();
         finder.leftClickOn(produceRoundButton);
-        finder.waitForAnyImageSure(workshops.get(0));
+        finder.waitForAnyImage(workshops.get(0));
 
         shiftProductsToRight();
         for (Image[] workshop : workshops) {
-            if (finder.isAnyImageVisible(workshop)) {
+            if (finder.withTime(0.1).isAnyImageVisible(workshop)) {
                 tapNextWorkshop(workshop);
                 oneTapToRight();
                 orderProduct();
@@ -121,26 +124,27 @@ public class WarpathBot extends Bot implements Runnable {
                 sleep(1);
             }
         }
-        finder.waitForImageSure(lorry);
+        finder.waitForImage(lorry);
         exit();
     }
 
-    private void sendLorry() {
+    private void sendSleepingLorry() {
         enter();
         finder.leftClickOn(deployButton);
         chooseDestinationType();
-        chooseLevel();
+        setupMaxLevel();
+
         finder.leftClickOn(searchButton);
-        sleep(3);
+        while (finder.withTime(1).isImageVisible(noDetectedNearby)) {
+            finder.leftClickOn(minusLvlButton);
+            finder.leftClickOn(searchButton);
+            sleep(2);
+        }
+        
+        sleep(2);
         leftClickAt(getWindowCenterPoint().shift(-20, 20));
         finder.leftClickOn(dispatchLorryButton);
         exit();
-    }
-
-    private void chooseLevel() {
-        while(!finder.isImageVisible(lvlOnRight)) {
-            finder.leftClickOn(plusLvlButton);
-        }
     }
 
     private void hideBottomLorryWindow() {
@@ -158,7 +162,7 @@ public class WarpathBot extends Bot implements Runnable {
 
     private void shiftProductsToRight() {
         enter();
-        while (finder.isImageVisible(productLeftArrows)) {
+        while (finder.withTime(0.5).isImageVisible(productLeftArrows)) {
             leftClickAt(finder.getCenterPointOf(productLeftArrows).shift(100, 50));
             sleep(0.2);
         }
@@ -195,24 +199,14 @@ public class WarpathBot extends Bot implements Runnable {
         Image choice;
         do {
             choice = destinations[random.nextInt(destinations.length)];
-        } while (!finder.isImageVisible(choice));
+        } while (!finder.withTime(0.2).isImageVisible(choice));
         finder.leftClickOn(choice);
         exit();
     }
 
-    private boolean canSeeSleepingLorry() {
-        enter();
-        return exit(finder.isAnyImageVisible(sleepingLorryIcon1, sleepingLorryIcon2));
-    }
-
-    private void showSleepingLorry() {
-        enter();
-        finder.mouseMoveTo(lorry);
-        mouseDragDirection(lorryDragDirection, 300);
-        lorryDragDirection =
-              lorryDragDirection == Direction.LEFT
-                    ? Direction.RIGHT
-                    : Direction.LEFT;
-        exit();
+    private void setupMaxLevel() {
+        while (!finder.withTime(0.1).isImageVisible(lvlOnRight)) {
+            finder.leftClickOn(plusLvlButton);
+        }
     }
 }
