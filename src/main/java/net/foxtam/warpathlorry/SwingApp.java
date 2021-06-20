@@ -124,7 +124,7 @@ public class SwingApp extends JFrame {
         setupEnglishGUI();
         setVisible(true);
         SwingUtilities.invokeLater(this::setupGUIWithPermission);
-        runDemoMode();
+//        runDemoMode();
         exit();
     }
 

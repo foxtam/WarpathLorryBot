@@ -29,7 +29,9 @@ public class WarpathBot extends Bot implements Runnable {
     final Image whiteSlash = Image.loadFromResource("/images/white_slash.png");
     final Image backToMainScreenButton = Image.loadFromResource("/images/back_to_main_screen_button.png");
     final Image recallLorryButton = Image.loadFromResource("/images/recall_lorry_button.png");
-    final Image redSlash = Image.loadFromResource("/images/red_slash.png");
+    final Image lvlOnRight = Image.loadFromResource("/images/lvl_on_right.png");
+    final Image plusLvlButton = Image.loadFromResource("/images/plus_lvl_button.png");
+    final Image minusLvlButton = Image.loadFromResource("/images/minus_lvl_button.png");
 
     final List<Image[]> workshops =
           List.of(
@@ -78,9 +80,9 @@ public class WarpathBot extends Bot implements Runnable {
         enter();
         while (true) {
             openBottomLorryWindow();
-            Image button = finder.waitForAnyImage(deployButton, recallLorryButton);
+            Image button = finder.waitForAnyImageSure(deployButton, recallLorryButton);
             if (button == deployButton) {
-                sendSleepingLorry();
+                sendLorry();
             } else if (button == recallLorryButton) {
                 hideBottomLorryWindow();
                 exit();
@@ -95,7 +97,7 @@ public class WarpathBot extends Bot implements Runnable {
         sleep(2.0);
         clickOnFactoryBuilding();
         finder.leftClickOn(produceRoundButton);
-        finder.waitForAnyImage(workshops.get(0));
+        finder.waitForAnyImageSure(workshops.get(0));
 
         shiftProductsToRight();
         for (Image[] workshop : workshops) {
@@ -119,20 +121,26 @@ public class WarpathBot extends Bot implements Runnable {
                 sleep(1);
             }
         }
-        finder.waitForImage(lorry);
+        finder.waitForImageSure(lorry);
         exit();
     }
 
-    private void sendSleepingLorry() {
+    private void sendLorry() {
         enter();
         finder.leftClickOn(deployButton);
         chooseDestinationType();
+        chooseLevel();
         finder.leftClickOn(searchButton);
         sleep(3);
         leftClickAt(getWindowCenterPoint().shift(-20, 20));
-        sleep(1);
         finder.leftClickOn(dispatchLorryButton);
         exit();
+    }
+
+    private void chooseLevel() {
+        while(!finder.isImageVisible(lvlOnRight)) {
+            finder.leftClickOn(plusLvlButton);
+        }
     }
 
     private void hideBottomLorryWindow() {
