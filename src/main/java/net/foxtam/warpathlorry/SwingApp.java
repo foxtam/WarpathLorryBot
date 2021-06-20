@@ -5,7 +5,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.time.LocalDate;
 
@@ -77,7 +77,7 @@ public class SwingApp extends JFrame {
         idPanel.add(IDLabel);
 
         copyIdButton = new JButton();
-        copyIdButton.addActionListener(getClipboardListener());
+        copyIdButton.addActionListener(this::clipBoardListener);
         idPanel.add(copyIdButton);
 
         panel.add(idPanel);
@@ -100,7 +100,7 @@ public class SwingApp extends JFrame {
         panel.add(runPanel);
 
         runButton = new JButton("Wait server response...");
-        runButton.addActionListener(getBotWorker());
+        runButton.addActionListener(this::botWorker);
         runButton.setEnabled(false);
         runPanel.add(runButton);
 
@@ -111,52 +111,48 @@ public class SwingApp extends JFrame {
 
         add(panel);
 
+        englishMenuItem.addActionListener(e -> setupEnglishGUI());
+        russianMenuItem.addActionListener(e -> setupRussianGUI());
+
         timer = new Timer(
               1000,
               e -> {
                   botTimer.addSecond();
                   timerLabel.setText(botTimer.toString());
               });
-
-        setEnglishGUI();
-
-        englishMenuItem.addActionListener(getEnglishGUIListener());
-        russianMenuItem.addActionListener(getRussianGUIListener());
-
+        
+        setupEnglishGUI();
         setVisible(true);
-        SwingUtilities.invokeLater(permissionCheck());
+        SwingUtilities.invokeLater(this::setupGUIWithPermission);
         runDemoMode();
         exit();
     }
 
-    private ActionListener getClipboardListener() {
-        return e -> {
-            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            StringSelection selection = new StringSelection(Computer.getID().toString());
-            clipboard.setContents(selection, selection);
-        };
+    private void clipBoardListener(ActionEvent e) {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection selection = new StringSelection(Computer.getID().toString());
+        clipboard.setContents(selection, selection);
     }
 
-    private ActionListener getBotWorker() {
-        return e -> {
-            botTimer.resetTime();
-            timer.start();
-            new BotThread(
-                  runButton,
-                  Double.parseDouble(pauseTextField.getText()),
-                  timer::stop,
-                  () -> {
-                      if (timer.isRunning()) {
-                          timer.stop();
-                      } else {
-                          timer.start();
-                      }
+    private void botWorker(ActionEvent e) {
+        botTimer.resetTime();
+        timer.start();
+        double pauseInMinutes = Double.parseDouble(pauseTextField.getText());
+        new BotThread(
+              runButton,
+              pauseInMinutes,
+              timer::stop,
+              () -> {
+                  if (timer.isRunning()) {
+                      timer.stop();
+                  } else {
+                      timer.start();
                   }
-            ).start();
-        };
+              }
+        ).start();
     }
 
-    private void setEnglishGUI() {
+    private void setupEnglishGUI() {
         infoLabel.setText("<html>Pause bot on/off: F4<br>Stop bot: F8</html>");
         copyIdButton.setText("Copy ID");
         pauseLabel.setText("Pause between cycles (minutes):");
@@ -164,23 +160,21 @@ public class SwingApp extends JFrame {
         runButton.setText(runButtonTitle);
     }
 
-    private ActionListener getEnglishGUIListener() {
-        return e -> setEnglishGUI();
+    private void setupRussianGUI() {
+        infoLabel.setText("<html>Установить/снять паузу: F4<br>Остановить бота: F8</html>");
+        copyIdButton.setText("Копировать ID");
+        pauseLabel.setText("Пауза между обходами (в минутах):");
+        runButtonTitle = "Старт";
+        runButton.setText(runButtonTitle);
     }
 
-    private ActionListener getRussianGUIListener() {
-        return e -> setRussianGUI();
-    }
-
-    private Runnable permissionCheck() {
-        return () -> {
-            try {
-                tryInitGUI();
-            } catch (IOException e) {
-                showErrorMessage(e.getMessage());
-                System.exit(1);
-            }
-        };
+    private void setupGUIWithPermission() {
+        try {
+            trySetupGUI();
+        } catch (IOException e) {
+            showErrorMessage(e.getMessage());
+            System.exit(1);
+        }
     }
 
     private void runDemoMode() {
@@ -200,15 +194,7 @@ public class SwingApp extends JFrame {
         thread.start();
     }
 
-    private void setRussianGUI() {
-        infoLabel.setText("<html>Установить/снять паузу: F4<br>Остановить бота: F8</html>");
-        copyIdButton.setText("Копировать ID");
-        pauseLabel.setText("Пауза между обходами (в минутах):");
-        runButtonTitle = "Старт";
-        runButton.setText(runButtonTitle);
-    }
-
-    private void tryInitGUI() throws IOException {
+    private void trySetupGUI() throws IOException {
         Registration registration = new Registration();
         if (registration.hasRegistration()) {
             LocalDate expirationLicenseDate = registration.getExpirationLicenseDate();
@@ -224,11 +210,7 @@ public class SwingApp extends JFrame {
     }
 
     private void showErrorMessage(String message) {
-        JOptionPane.showMessageDialog(
-              null,
-              message,
-              "Error",
-              JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     private void initRunnableGUI(LocalDate expirationDate) {
