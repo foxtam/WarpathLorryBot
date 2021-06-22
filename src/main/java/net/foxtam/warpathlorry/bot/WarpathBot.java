@@ -2,12 +2,12 @@ package net.foxtam.warpathlorry.bot;
 
 
 import net.foxtam.foxclicker.*;
+import net.foxtam.warpathlorry.bot.exceptions.ChooseDestinationException;
 
 import java.util.List;
 import java.util.Random;
 
-import static net.foxtam.foxclicker.GlobalLogger.enter;
-import static net.foxtam.foxclicker.GlobalLogger.exit;
+import static net.foxtam.foxclicker.GlobalLogger.*;
 
 public class WarpathBot extends Bot implements Runnable {
 
@@ -58,59 +58,91 @@ public class WarpathBot extends Bot implements Runnable {
         private void lorryBypass() {
             enter();
             while (true) {
-                openBottomLorryWindow();
-                Image button = finder.waitForAnyImage(deployButton, recallLorryButton);
-                if (button == deployButton) {
-                    sendSleepingLorry();
-                } else if (button == recallLorryButton) {
-                    hideBottomLorryWindow();
-                    exit();
-                    return;
+                try {
+                    if (sendLorryOrStopDeploy(this::setupMaxLevel)) {
+                        exit();
+                        return;
+                    }
+                } catch (ChooseDestinationException ignore) {
                 }
             }
+        }
+
+        private boolean sendLorryOrStopDeploy(Runnable levelChooser) throws ChooseDestinationException {
+            enter();
+            openBottomLorryWindow();
+            Image button = finder.waitForAnyImage(deployButton, recallLorryButton);
+            if (button == deployButton) {
+                sendLorry(levelChooser);
+            } else if (button == recallLorryButton) {
+                hideBottomLorryWindow();
+                return exit(true);
+            }
+            return exit(false);
         }
 
         private void openBottomLorryWindow() {
             enter();
             for (int i = 0; i < 2; i++) {
-                if (!finder.isImageVisible(lorry)) {
+                if (!finder.withTime(0.5).isImageVisible(lorry)) {
                     finder.leftClickOn(lorryMainButton);
-                    sleep(1);
+                    sleep(0.5);
                 }
             }
             finder.waitForImage(lorry);
             exit();
         }
 
-        private void sendSleepingLorry() {
+        private void sendLorry(Runnable levelChooser) throws ChooseDestinationException {
             enter();
             finder.leftClickOn(deployButton);
             chooseDestinationType();
-            setupMaxLevel();
+            levelChooser.run();
 
             finder.leftClickOn(searchButton);
+            lowerLevelIfNoDetect();
+
+            clickOnDestinationTown();
+            dispatchSure();
+            exit();
+        }
+
+        private void dispatchSure() throws ChooseDestinationException {
+            if (finder.withTime(1).isImageVisible(dispatchLorryButton)) {
+                finder.leftClickOn(dispatchLorryButton);
+            } else {
+                sendLorryOrStopDeploy(this::lowerLevel);
+            }
+        }
+
+        private void clickOnDestinationTown() {
+            sleep(1.5);
+            leftClickAt(getWindowCenterPoint().shift(-20, 20));
+        }
+
+        private void lowerLevelIfNoDetect() {
             while (finder.withTime(1).isImageVisible(noDetectedNearby)) {
                 finder.leftClickOn(minusLvlButton);
                 finder.leftClickOn(searchButton);
                 sleep(1.5);
             }
-
-            sleep(1);
-            leftClickAt(getWindowCenterPoint().shift(-20, 20));
-            finder.leftClickOn(dispatchLorryButton);
-            exit();
         }
 
         private void hideBottomLorryWindow() {
             finder.leftClickOn(lorryMainButton);
         }
 
-        private void chooseDestinationType() {
+        private void chooseDestinationType() throws ChooseDestinationException {
             enter();
             Image[] destinations = {farm, mine, oilWell};
             Image choice;
+            int counter = 0;
             do {
                 choice = destinations[random.nextInt(destinations.length)];
+                counter++;
+                if (counter > 20) {
+                    throw exception(new ChooseDestinationException());
+                }
             } while (!finder.withTime(0.2).isImageVisible(choice));
             finder.leftClickOn(choice);
             exit();
@@ -120,6 +152,10 @@ public class WarpathBot extends Bot implements Runnable {
             while (!finder.withTime(0.1).isImageVisible(lvlOnRight)) {
                 finder.leftClickOn(plusLvlButton);
             }
+        }
+
+        private void lowerLevel() {
+            finder.leftClickOn(minusLvlButton);
         }
     }
 
@@ -134,23 +170,23 @@ public class WarpathBot extends Bot implements Runnable {
         final Image backToMainScreenButton = Image.loadFromResource("/images/back_to_main_screen_button.png");
 
         final List<Image[]> workshops =
-              List.of(
-                    new Image[]{
-                          Image.loadFromResource("/images/workshop_1_1.png"),
-                          Image.loadFromResource("/images/workshop_1_2.png")
-                    },
-                    new Image[]{
-                          Image.loadFromResource("/images/workshop_2_1.png"),
-                          Image.loadFromResource("/images/workshop_2_2.png"),
-                    },
-                    new Image[]{
-                          Image.loadFromResource("/images/workshop_3_1.png"),
-                          Image.loadFromResource("/images/workshop_3_2.png")
-                    },
-                    new Image[]{
-                          Image.loadFromResource("/images/workshop_4_1.png"),
-                          Image.loadFromResource("/images/workshop_4_2.png")
-                    });
+                List.of(
+                        new Image[]{
+                                Image.loadFromResource("/images/workshop_1_1.png"),
+                                Image.loadFromResource("/images/workshop_1_2.png")
+                        },
+                        new Image[]{
+                                Image.loadFromResource("/images/workshop_2_1.png"),
+                                Image.loadFromResource("/images/workshop_2_2.png"),
+                        },
+                        new Image[]{
+                                Image.loadFromResource("/images/workshop_3_1.png"),
+                                Image.loadFromResource("/images/workshop_3_2.png")
+                        },
+                        new Image[]{
+                                Image.loadFromResource("/images/workshop_4_1.png"),
+                                Image.loadFromResource("/images/workshop_4_2.png")
+                        });
 
         public void run() {
             factoryBypass();
@@ -214,10 +250,10 @@ public class WarpathBot extends Bot implements Runnable {
             if (finder.isImageVisible(produceGreenButton)) {
                 ScreenPoint productGreenButtonPoint = finder.getCenterPointOf(produceGreenButton);
                 while (finder
-                      .withColor(true)
-                      .withTolerance(0.91)
-                      .withTime(2)
-                      .isImageVisible(whiteSlash)) {
+                        .withColor(true)
+                        .withTolerance(0.91)
+                        .withTime(2)
+                        .isImageVisible(whiteSlash)) {
                     for (int i = 0; i < 5; i++) {
                         leftClickAt(productGreenButtonPoint);
                         sleep(0.02);

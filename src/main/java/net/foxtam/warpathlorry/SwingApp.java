@@ -43,7 +43,7 @@ public class SwingApp extends JFrame {
     }
 
     public SwingApp() {
-        super("Демо версия - Warpath Bot");
+        super("Warpath Bot");
         enter();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
