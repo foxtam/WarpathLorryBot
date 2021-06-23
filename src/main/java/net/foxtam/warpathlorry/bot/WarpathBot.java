@@ -11,13 +11,20 @@ import static net.foxtam.foxclicker.GlobalLogger.*;
 
 public class WarpathBot extends Bot implements Runnable {
 
+    private static final int defaultNoxResolutionHeight = 900;
+    private static final int noxVerticalExcess = 34;
     private final Finder finder = new Finder(4.0, 0.85, false);
     private final double pauseInMinutes;
+    private final ImageScaleLoader loader;
 
     public WarpathBot(double pauseInMinutes, Runnable onStop, Runnable onPause) {
         super(KeyConfig.getDefault(), Window.getByTitle("NoxPlayer"), onStop, onPause);
         enter(pauseInMinutes);
         this.pauseInMinutes = pauseInMinutes;
+        int resolutionHeight = getWidowRectangle().height - noxVerticalExcess;
+        double scale = ((double) resolutionHeight) / defaultNoxResolutionHeight;
+        this.loader = new ImageScaleLoader(scale);
+        System.out.println(scale);
         exit();
     }
 
@@ -36,19 +43,19 @@ public class WarpathBot extends Bot implements Runnable {
     }
 
     class Lorries {
-        final Image lorryMainButton = Image.loadFromResource("/images/lorry_main_button.png");
-        final Image deployButton = Image.loadFromResource("/images/deploy_button.png");
-        final Image lorry = Image.loadFromResource("/images/lorry.png");
-        final Image farm = Image.loadFromResource("/images/farm.png");
-        final Image mine = Image.loadFromResource("/images/mine.png");
-        final Image oilWell = Image.loadFromResource("/images/oil_well.png");
-        final Image searchButton = Image.loadFromResource("/images/search_button.png");
-        final Image dispatchLorryButton = Image.loadFromResource("/images/dispatch_lorry_button.png");
-        final Image recallLorryButton = Image.loadFromResource("/images/recall_lorry_button.png");
-        final Image lvlOnRight = Image.loadFromResource("/images/lvl_on_right.png");
-        final Image plusLvlButton = Image.loadFromResource("/images/plus_lvl_button.png");
-        final Image minusLvlButton = Image.loadFromResource("/images/minus_lvl_button.png");
-        final Image noDetectedNearby = Image.loadFromResource("/images/no_detected_nearby.png");
+        final Image lorryMainButton = loader.loadFromResource("/images/px900/lorry_main_button.png");
+        final Image deployButton = loader.loadFromResource("/images/px900/deploy_button.png");
+        final Image lorry = loader.loadFromResource("/images/px900/lorry.png");
+        final Image farm = loader.loadFromResource("/images/px900/farm.png");
+        final Image mine = loader.loadFromResource("/images/px900/mine.png");
+        final Image oilWell = loader.loadFromResource("/images/px900/oil_well.png");
+        final Image searchButton = loader.loadFromResource("/images/px900/search_button.png");
+        final Image dispatchLorryButton = loader.loadFromResource("/images/px900/dispatch_lorry_button.png");
+        final Image recallLorryButton = loader.loadFromResource("/images/px900/recall_lorry_button.png");
+        final Image lvlOnRight = loader.loadFromResource("/images/px900/lvl_on_right.png");
+        final Image plusLvlButton = loader.loadFromResource("/images/px900/plus_lvl_button.png");
+        final Image minusLvlButton = loader.loadFromResource("/images/px900/minus_lvl_button.png");
+        final Image noDetectedNearby = loader.loadFromResource("/images/px900/no_detected_nearby.png");
         private final Random random = new Random();
 
         public void run() {
@@ -161,31 +168,31 @@ public class WarpathBot extends Bot implements Runnable {
 
     class Factory {
 
-        final Image returnToBaseButton = Image.loadFromResource("/images/return_to_base_button.png");
-        final Image produceRoundButton = Image.loadFromResource("/images/produce_round_button.png");
-        final Image produceGreenButton = Image.loadFromResource("/images/produce_green_button.png");
-        final Image productLeftArrows = Image.loadFromResource("/images/product_left_arrows.png");
-        final Image productRightArrows = Image.loadFromResource("/images/product_right_arrows.png");
-        final Image whiteSlash = Image.loadFromResource("/images/white_slash.png");
-        final Image backToMainScreenButton = Image.loadFromResource("/images/back_to_main_screen_button.png");
+        final Image returnToBaseButton = loader.loadFromResource("/images/px900/return_to_base_button.png");
+        final Image produceRoundButton = loader.loadFromResource("/images/px900/produce_round_button.png");
+        final Image produceGreenButton = loader.loadFromResource("/images/px900/produce_green_button.png");
+        final Image productLeftArrows = loader.loadFromResource("/images/px900/product_left_arrows.png");
+        final Image productRightArrows = loader.loadFromResource("/images/px900/product_right_arrows.png");
+        final Image whiteSlash = loader.loadFromResource("/images/px900/white_slash.png");
+        final Image backToMainScreenButton = loader.loadFromResource("/images/px900/back_to_main_screen_button.png");
 
         final List<Image[]> workshops =
                 List.of(
                         new Image[]{
-                                Image.loadFromResource("/images/workshop_1_1.png"),
-                                Image.loadFromResource("/images/workshop_1_2.png")
+                                loader.loadFromResource("/images/px900/workshop_1_1.png"),
+                                loader.loadFromResource("/images/px900/workshop_1_2.png")
                         },
                         new Image[]{
-                                Image.loadFromResource("/images/workshop_2_1.png"),
-                                Image.loadFromResource("/images/workshop_2_2.png"),
+                                loader.loadFromResource("/images/px900/workshop_2_1.png"),
+                                loader.loadFromResource("/images/px900/workshop_2_2.png"),
                         },
                         new Image[]{
-                                Image.loadFromResource("/images/workshop_3_1.png"),
-                                Image.loadFromResource("/images/workshop_3_2.png")
+                                loader.loadFromResource("/images/px900/workshop_3_1.png"),
+                                loader.loadFromResource("/images/px900/workshop_3_2.png")
                         },
                         new Image[]{
-                                Image.loadFromResource("/images/workshop_4_1.png"),
-                                Image.loadFromResource("/images/workshop_4_2.png")
+                                loader.loadFromResource("/images/px900/workshop_4_1.png"),
+                                loader.loadFromResource("/images/px900/workshop_4_2.png")
                         });
 
         public void run() {
