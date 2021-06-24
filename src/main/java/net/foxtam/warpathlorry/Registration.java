@@ -1,5 +1,7 @@
 package net.foxtam.warpathlorry;
 
+import com.google.gson.JsonSyntaxException;
+
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.LocalDate;
@@ -23,10 +25,14 @@ public class Registration {
     }
 
     private static Optional<LocalDate> getExpirationDateOf(ComputerID id) {
-        JsonMap jsonMap = new JsonMap(readStringByURL(remoteClientsFile));
-        String key = id.toString();
-        String value = jsonMap.get(key);
-        return Optional.ofNullable(value).map(LocalDate::parse);
+        try {
+            JsonMap jsonMap = new JsonMap(readStringByURL(remoteClientsFile));
+            String key = id.toString();
+            String value = jsonMap.get(key);
+            return Optional.ofNullable(value).map(LocalDate::parse);
+        } catch (JsonSyntaxException e) {
+            throw new RuntimeException("Unable to read: " + remoteClientsFile);
+        }
     }
 
     public LocalDate getExpirationLicenseDate() {

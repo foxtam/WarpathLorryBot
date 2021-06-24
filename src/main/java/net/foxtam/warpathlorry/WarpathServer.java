@@ -1,5 +1,7 @@
 package net.foxtam.warpathlorry;
 
+import com.google.gson.JsonSyntaxException;
+
 import java.net.URL;
 import java.nio.file.Path;
 
@@ -16,7 +18,11 @@ public class WarpathServer {
     }
 
     public static Version getBotLastVersion() {
-        JsonMap jsonMap = new JsonMap(readStringByURL(remoteVersionFile));
-        return new Version(jsonMap.get("version"));
+        try {
+            JsonMap jsonMap = new JsonMap(readStringByURL(remoteVersionFile));
+            return new Version(jsonMap.get("version"));
+        } catch (JsonSyntaxException e) {
+            throw new RuntimeException("Unable to read: " + remoteVersionFile);
+        }
     }
 }
