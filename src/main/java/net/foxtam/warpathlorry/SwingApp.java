@@ -27,8 +27,7 @@ public class SwingApp extends JFrame {
     private final JButton runButton;
     private final JLabel infoLabel;
     private final JTextField pauseTextField;
-    private final SwitchTimer timer;
-    private final BotTimer botTimer;
+    private final Stopwatch timer;
     private final JButton copyIdButton;
     private final JLabel pauseLabel;
     private final JLabel licenseLabel;
@@ -86,8 +85,7 @@ public class SwingApp extends JFrame {
         licenseLabel = new JLabel();
         mainPanel.add(licenseLabel);
 
-        botTimer = new BotTimer();
-        JLabel timerLabel = new JLabel(botTimer.toString());
+        JLabel timerLabel = new JLabel();
         timerLabel.setHorizontalAlignment(SwingConstants.RIGHT);
         mainPanel.add(timerLabel);
 
@@ -96,12 +94,7 @@ public class SwingApp extends JFrame {
         englishMenuItem.addActionListener(e -> setupEnglishGUI());
         russianMenuItem.addActionListener(e -> setupRussianGUI());
 
-        timer = new SwitchTimer(
-                1000,
-                e -> {
-                    botTimer.addSecond();
-                    timerLabel.setText(botTimer.toString());
-                });
+        timer = new Stopwatch(d -> timerLabel.setText(d.toString()));
 
         setupEnglishGUI();
         setVisible(true);
@@ -117,7 +110,7 @@ public class SwingApp extends JFrame {
     }
 
     private void botWorker(ActionEvent e) {
-        botTimer.resetTime();
+        timer.reset();
         timer.start();
         double pauseInMinutes = Double.parseDouble(pauseTextField.getText());
         new BotThread(
@@ -164,19 +157,6 @@ public class SwingApp extends JFrame {
         }
     }
 
-    private void tryCheckNewVersion() {
-        Version lastVersion = WarpathServer.getBotLastVersion();
-        Version currentVersion = App.getAppCurrentVersion();
-
-        if (lastVersion.isGreater(currentVersion)) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "New version is available",
-                    "Info",
-                    JOptionPane.INFORMATION_MESSAGE);
-        }
-    }
-
     private void trySetupGUI() throws IOException {
         Registration registration = WarpathServer.getRegistrationInfoFor(Computer.getID());
         if (registration.hasRegistration()) {
@@ -190,6 +170,19 @@ public class SwingApp extends JFrame {
             initNoRunGUI();
         }
         runButton.setText(runButtonTitle);
+    }
+
+    private void tryCheckNewVersion() {
+        Version lastVersion = WarpathServer.getBotLastVersion();
+        Version currentVersion = App.getAppCurrentVersion();
+
+        if (lastVersion.isGreater(currentVersion)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "New version is available",
+                    "Info",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private void initRunnableGUI(LocalDate expirationDate) {

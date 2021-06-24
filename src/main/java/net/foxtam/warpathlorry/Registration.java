@@ -23,7 +23,7 @@ public class Registration {
     }
 
     private static Optional<LocalDate> getExpirationDateOf(ComputerID id) {
-        JsonMap jsonMap = new JsonMap(readStringByURL(localClientsFile));
+        JsonMap jsonMap = new JsonMap(readStringByURL(remoteClientsFile));
         String key = id.toString();
         String value = jsonMap.get(key);
         return Optional.ofNullable(value).map(LocalDate::parse);

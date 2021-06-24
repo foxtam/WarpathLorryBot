@@ -16,7 +16,7 @@ public class WarpathServer {
     }
 
     public static Version getBotLastVersion() {
-        JsonMap jsonMap = new JsonMap(readStringByURL(localVersionFile));
+        JsonMap jsonMap = new JsonMap(readStringByURL(remoteVersionFile));
         return new Version(jsonMap.get("version"));
     }
 }
