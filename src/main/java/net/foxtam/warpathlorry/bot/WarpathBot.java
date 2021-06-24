@@ -15,7 +15,7 @@ public class WarpathBot extends Bot implements Runnable {
     private static final int noxVerticalExcess = 34;
     private final Finder finder = new Finder(4.0, 0.85, false);
     private final double pauseInMinutes;
-    private final ImageScaleLoader loader;
+    private final ScaleImageLoader loader;
 
     public WarpathBot(double pauseInMinutes, Runnable onStop, Runnable onPause) {
         super(KeyConfig.getDefault(), Window.getByTitle("NoxPlayer"), onStop, onPause);
@@ -23,8 +23,7 @@ public class WarpathBot extends Bot implements Runnable {
         this.pauseInMinutes = pauseInMinutes;
         int resolutionHeight = getWidowRectangle().height - noxVerticalExcess;
         double scale = ((double) resolutionHeight) / defaultNoxResolutionHeight;
-        this.loader = new ImageScaleLoader(scale);
-        System.out.println(scale);
+        this.loader = new ScaleImageLoader(1.0);
         exit();
     }
 
