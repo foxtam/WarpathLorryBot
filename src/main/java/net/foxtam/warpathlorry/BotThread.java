@@ -1,43 +1,35 @@
 package net.foxtam.warpathlorry;
 
-import net.foxtam.foxclicker.exceptions.WaitForImageException;
+import net.foxtam.foxclicker.GlobalLogger;
 import net.foxtam.warpathlorry.bot.WarpathBot;
 
 import javax.swing.*;
 
 public class BotThread extends Thread {
-    private final JButton button;
-
     private final double pauseInMinutes;
-
     private final Runnable onStop;
-
     private final Runnable onPause;
+    private final Runnable runBefore;
+    private final Runnable runAfter;
 
-    public BotThread(JButton button, double pauseInMinutes, Runnable onStop, Runnable onPause) {
-        this.button = button;
+    public BotThread(double pauseInMinutes, Runnable onPause, Runnable onStop, Runnable runBefore, Runnable runAfter) {
         this.pauseInMinutes = pauseInMinutes;
         this.onStop = onStop;
         this.onPause = onPause;
+        this.runBefore = runBefore;
+        this.runAfter = runAfter;
     }
 
     @Override
     public void run() {
         try {
-            this.button.setEnabled(false);
-            (new WarpathBot(this.pauseInMinutes, this.onStop, this.onPause)).run();
-        } catch (WaitForImageException exception) {
-            showErrorMessage(exception);
+            runBefore.run();
+            new WarpathBot(this.pauseInMinutes, this.onStop, this.onPause).run();
+        } catch (Exception e) {
+            GlobalLogger.trace(e);
+            App.showErrorMessage(e.toString());
         } finally {
-            this.button.setEnabled(true);
+            runAfter.run();
         }
-    }
-
-    private void showErrorMessage(WaitForImageException exception) {
-        JOptionPane.showMessageDialog(
-              null,
-              exception.getMessage(),
-              "Image not found",
-              JOptionPane.ERROR_MESSAGE);
     }
 }

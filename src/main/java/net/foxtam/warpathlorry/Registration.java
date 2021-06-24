@@ -1,19 +1,32 @@
 package net.foxtam.warpathlorry;
 
-import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static net.foxtam.warpathlorry.UrlUtil.readStringByURL;
+import static net.foxtam.warpathlorry.UrlUtil.toURL;
+
 public class Registration {
 
+    private static final URL remoteClientsFile = toURL("https://garantmarket.net/warpath/warpath_clients.json");
+    private static final URL localClientsFile = toURL(Path.of("warpath_clients.json"));
     private final LocalDate expirationDate;
     private final boolean hasRegistration;
     private LocalDate globalTime;
 
-    public Registration() throws IOException {
-        Optional<LocalDate> date = Licenses.getExpirationDateOf(Computer.getID());
+    public Registration(ComputerID computerID) {
+        Optional<LocalDate> date = getExpirationDateOf(computerID);
         hasRegistration = date.isPresent();
         expirationDate = hasRegistration ? date.get() : null;
+    }
+
+    private static Optional<LocalDate> getExpirationDateOf(ComputerID id) {
+        JsonMap jsonMap = new JsonMap(readStringByURL(localClientsFile));
+        String key = id.toString();
+        String value = jsonMap.get(key);
+        return Optional.ofNullable(value).map(LocalDate::parse);
     }
 
     public LocalDate getExpirationLicenseDate() {

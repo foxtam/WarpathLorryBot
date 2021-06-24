@@ -1,5 +1,7 @@
 package net.foxtam.warpathlorry;
 
+import net.foxtam.foxclicker.GlobalLogger;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -25,29 +27,20 @@ public class SwingApp extends JFrame {
     private final JButton runButton;
     private final JLabel infoLabel;
     private final JTextField pauseTextField;
-    private final Timer timer;
+    private final SwitchTimer timer;
     private final BotTimer botTimer;
     private final JButton copyIdButton;
     private final JLabel pauseLabel;
+    private final JLabel licenseLabel;
 
     private String runButtonTitle;
-
-    public static void main(String[] args) {
-        enter((Object[]) args);
-        try {
-            SwingUtilities.invokeAndWait(SwingApp::new);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.toString());
-        }
-        exit();
-    }
 
     public SwingApp() {
         super("Warpath Bot");
         enter();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(280, 340);
+        setSize(280, 360);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -63,67 +56,57 @@ public class SwingApp extends JFrame {
         languageMenu.add(englishMenuItem);
         languageMenu.add(russianMenuItem);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(0, 1, 10, 10));
-        panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-        JPanel idPanel = new JPanel();
-        idPanel.setLayout(new GridLayout(0, 1, 10, 10));
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new GridLayout(0, 1, 10, 10));
+        mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         infoLabel = new JLabel();
-        panel.add(infoLabel);
+        mainPanel.add(infoLabel);
 
         JLabel IDLabel = new JLabel("ID: " + Computer.getID());
-        idPanel.add(IDLabel);
+        mainPanel.add(IDLabel);
 
         copyIdButton = new JButton();
         copyIdButton.addActionListener(this::clipBoardListener);
-        idPanel.add(copyIdButton);
-
-        panel.add(idPanel);
-
-        JPanel pausePanel = new JPanel();
-        pausePanel.setLayout(new GridLayout(0, 1, 10, 10));
+        mainPanel.add(copyIdButton);
 
         pauseLabel = new JLabel();
         pauseLabel.setVerticalAlignment(SwingConstants.BOTTOM);
-        pausePanel.add(pauseLabel);
+        mainPanel.add(pauseLabel);
 
         pauseTextField = new JTextField("1.0");
         pauseTextField.setHorizontalAlignment(SwingConstants.RIGHT);
-        pausePanel.add(pauseTextField);
-
-        panel.add(pausePanel);
-
-        JPanel runPanel = new JPanel();
-        runPanel.setLayout(new GridLayout(0, 1, 10, 10));
-        panel.add(runPanel);
+        mainPanel.add(pauseTextField);
 
         runButton = new JButton("Wait server response...");
         runButton.addActionListener(this::botWorker);
         runButton.setEnabled(false);
-        runPanel.add(runButton);
+        mainPanel.add(runButton);
+
+        licenseLabel = new JLabel();
+        mainPanel.add(licenseLabel);
 
         botTimer = new BotTimer();
         JLabel timerLabel = new JLabel(botTimer.toString());
         timerLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-        runPanel.add(timerLabel);
+        mainPanel.add(timerLabel);
 
-        add(panel);
+        add(mainPanel);
 
         englishMenuItem.addActionListener(e -> setupEnglishGUI());
         russianMenuItem.addActionListener(e -> setupRussianGUI());
 
-        timer = new Timer(
-              1000,
-              e -> {
-                  botTimer.addSecond();
-                  timerLabel.setText(botTimer.toString());
-              });
-        
+        timer = new SwitchTimer(
+                1000,
+                e -> {
+                    botTimer.addSecond();
+                    timerLabel.setText(botTimer.toString());
+                });
+
         setupEnglishGUI();
         setVisible(true);
         SwingUtilities.invokeLater(this::setupGUIWithPermission);
+        SwingUtilities.invokeLater(this::checkNewVersion);
         exit();
     }
 
@@ -138,16 +121,11 @@ public class SwingApp extends JFrame {
         timer.start();
         double pauseInMinutes = Double.parseDouble(pauseTextField.getText());
         new BotThread(
-              runButton,
-              pauseInMinutes,
-              timer::stop,
-              () -> {
-                  if (timer.isRunning()) {
-                      timer.stop();
-                  } else {
-                      timer.start();
-                  }
-              }
+                pauseInMinutes,
+                timer::switchState,
+                timer::stop,
+                () -> runButton.setEnabled(false),
+                () -> runButton.setEnabled(true)
         ).start();
     }
 
@@ -170,31 +148,37 @@ public class SwingApp extends JFrame {
     private void setupGUIWithPermission() {
         try {
             trySetupGUI();
-        } catch (IOException e) {
-            showErrorMessage(e.getMessage());
+        } catch (Exception e) {
+            GlobalLogger.trace(e);
+            App.showErrorMessage(e.getMessage());
             System.exit(1);
         }
     }
 
-    private void runDemoMode() {
-        Thread thread = new Thread(() -> {
-            try {
-                JOptionPane.showMessageDialog(
-                      null,
-                      "Демо версия завершит работу через 15 минут");
-                Thread.sleep(900 * 1000);
-                System.exit(0);
-            } catch (InterruptedException e) {
-                showErrorMessage(e.getMessage());
-                throw new RuntimeException(e);
-            }
-        });
-        thread.setDaemon(true);
-        thread.start();
+    private void checkNewVersion() {
+        try {
+            tryCheckNewVersion();
+        } catch (Exception e) {
+            GlobalLogger.trace(e);
+            App.showErrorMessage(e.getMessage());
+        }
+    }
+
+    private void tryCheckNewVersion() {
+        Version lastVersion = WarpathServer.getBotLastVersion();
+        Version currentVersion = App.getAppCurrentVersion();
+
+        if (lastVersion.isGreater(currentVersion)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "New version is available",
+                    "Info",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private void trySetupGUI() throws IOException {
-        Registration registration = new Registration();
+        Registration registration = WarpathServer.getRegistrationInfoFor(Computer.getID());
         if (registration.hasRegistration()) {
             LocalDate expirationLicenseDate = registration.getExpirationLicenseDate();
             if (registration.isLicenseValid()) {
@@ -208,37 +192,21 @@ public class SwingApp extends JFrame {
         runButton.setText(runButtonTitle);
     }
 
-    private void showErrorMessage(String message) {
-        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
-    }
-
     private void initRunnableGUI(LocalDate expirationDate) {
-        JOptionPane.showMessageDialog(
-              this,
-              "License is valid until: " + expirationDate,
-              "Info",
-              JOptionPane.INFORMATION_MESSAGE);
-        infoLabel.setForeground(Color.BLUE);
+        licenseLabel.setText("License is valid until: " + expirationDate);
+        licenseLabel.setForeground(Color.BLUE);
         runButton.setEnabled(true);
     }
 
     private void initExpiredDateGUI(LocalDate expirationDate) {
-        JOptionPane.showMessageDialog(
-              this,
-              "License expired: " + expirationDate,
-              "Warning",
-              JOptionPane.WARNING_MESSAGE);
-        infoLabel.setForeground(Color.RED);
+        licenseLabel.setText("License expired: " + expirationDate);
+        licenseLabel.setForeground(Color.RED);
         runButton.setEnabled(false);
     }
 
     private void initNoRunGUI() {
-        JOptionPane.showMessageDialog(
-              this,
-              "Client ID unknown",
-              "Warning",
-              JOptionPane.WARNING_MESSAGE);
-        infoLabel.setForeground(Color.RED);
+        licenseLabel.setText("Client ID unknown");
+        licenseLabel.setForeground(Color.RED);
         runButton.setEnabled(false);
     }
 }
