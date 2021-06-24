@@ -88,6 +88,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
+                    <finalName>WarpathBot</finalName>
                     <archive>
                         <manifest>
                             <mainClass>net.foxtam.warpathlorry.App</mainClass>
@@ -96,6 +97,7 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
