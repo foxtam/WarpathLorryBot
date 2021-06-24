@@ -6,9 +6,11 @@ import java.util.Objects;
 
 public class Version {
     private final List<Integer> subVersions;
+    private final String strVersion;
 
     public Version(String version) {
         this.subVersions = Arrays.stream(version.split("\\.")).map(Integer::parseInt).toList();
+        this.strVersion = version;
     }
 
     public boolean isGreater(Version version) {
@@ -27,9 +29,7 @@ public class Version {
 
     @Override
     public String toString() {
-        return "Version{" +
-                "subVersions=" + subVersions +
-                '}';
+        return strVersion;
     }
 
     @Override

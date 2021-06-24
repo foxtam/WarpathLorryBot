@@ -35,11 +35,11 @@ public class SwingApp extends JFrame {
     private String runButtonTitle;
 
     public SwingApp() {
-        super("Warpath Bot");
+        super("Warpath Bot - " + App.getAppCurrentVersion());
         enter();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(280, 360);
+        setSize(290, 360);
         setLocationRelativeTo(null);
         setResizable(false);
 
