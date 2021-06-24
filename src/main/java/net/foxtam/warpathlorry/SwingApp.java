@@ -94,7 +94,7 @@ public class SwingApp extends JFrame {
         englishMenuItem.addActionListener(e -> setupEnglishGUI());
         russianMenuItem.addActionListener(e -> setupRussianGUI());
 
-        timer = new Stopwatch(d -> timerLabel.setText(d.toString()));
+        timer = new Stopwatch(time -> timerLabel.setText(time.toString()));
 
         setupEnglishGUI();
         setVisible(true);
