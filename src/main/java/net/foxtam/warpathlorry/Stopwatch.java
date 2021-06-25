@@ -43,7 +43,8 @@ public class Stopwatch {
         timer.start();
     }
 
-    public void reset() {
+    public void restart() {
         init = LocalTime.now();
+        start();
     }
 }
