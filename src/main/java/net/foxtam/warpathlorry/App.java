@@ -11,6 +11,9 @@ import static net.foxtam.foxclicker.GlobalLogger.enter;
 import static net.foxtam.foxclicker.GlobalLogger.exit;
 
 public class App {
+
+    public static final String PROJECT_PROPERTIES = "project.properties";
+
     public static void main(String[] args) {
         enter((Object[]) args);
         try {
@@ -24,7 +27,7 @@ public class App {
     public static Version getAppCurrentVersion() {
         try {
             Properties properties = new Properties();
-            String propertiesFile = "project.properties";
+            String propertiesFile = PROJECT_PROPERTIES;
             InputStream resourceAsStream = App.class.getResourceAsStream("/" + propertiesFile);
             if (resourceAsStream == null) throw new RuntimeException("Unable to read file: " + propertiesFile);
             properties.load(new InputStreamReader(resourceAsStream, StandardCharsets.UTF_8));
