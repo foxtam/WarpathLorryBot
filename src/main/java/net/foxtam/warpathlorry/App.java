@@ -33,7 +33,7 @@ public class App {
             properties.load(new InputStreamReader(resourceAsStream, StandardCharsets.UTF_8));
             return new Version(properties.getProperty("version"));
         } catch (IOException e) {
-            showErrorMessage("Unable to read file with application current version. " + e);
+            showErrorMessage("Unable to read file with application current version. " + e.getMessage());
             System.exit(1);
             throw new RuntimeException(e);
         }
