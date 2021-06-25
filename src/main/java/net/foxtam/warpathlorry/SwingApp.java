@@ -177,7 +177,7 @@ public class SwingApp extends JFrame {
         if (lastVersion.isGreater(currentVersion)) {
             JOptionPane.showMessageDialog(
                     this,
-                    "New version is available",
+                    "New version is available: " + lastVersion,
                     "Info",
                     JOptionPane.INFORMATION_MESSAGE);
         }
