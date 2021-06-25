@@ -8,7 +8,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.time.LocalDate;
 
 import static net.foxtam.foxclicker.GlobalLogger.enter;
@@ -110,15 +109,19 @@ public class SwingApp extends JFrame {
     }
 
     private void botWorker(ActionEvent e) {
-        timer.reset();
-        timer.start();
         double pauseInMinutes = Double.parseDouble(pauseTextField.getText());
         new BotThread(
                 pauseInMinutes,
                 timer::switchState,
                 timer::stop,
-                () -> runButton.setEnabled(false),
-                () -> runButton.setEnabled(true)
+                () -> {
+                    timer.restart();
+                    runButton.setEnabled(false);
+                },
+                () -> {
+                    timer.stop();
+                    runButton.setEnabled(true);
+                }
         ).start();
     }
 
