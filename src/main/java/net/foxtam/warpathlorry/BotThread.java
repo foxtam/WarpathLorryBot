@@ -27,7 +27,7 @@ public class BotThread extends Thread {
             new WarpathBot(this.pauseInMinutes, this.onStop, this.onPause).run();
         } catch (Exception e) {
             GlobalLogger.trace(e);
-            App.showErrorMessage(e.toString());
+            App.showErrorMessage(e.getMessage());
         } finally {
             runAfter.run();
         }
