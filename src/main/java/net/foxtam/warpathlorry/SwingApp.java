@@ -160,15 +160,10 @@ public class SwingApp extends JFrame {
         }
     }
 
-    private void trySetupGUI() throws IOException {
+    private void trySetupGUI() {
         Registration registration = WarpathServer.getRegistrationInfoFor(Computer.getID());
         if (registration.hasRegistration()) {
-            LocalDate expirationLicenseDate = registration.getExpirationLicenseDate();
-            if (registration.isLicenseValid()) {
-                initRunnableGUI(expirationLicenseDate);
-            } else {
-                initExpiredDateGUI(expirationLicenseDate);
-            }
+            setupWithRegistration(registration);
         } else {
             initNoRunGUI();
         }
@@ -188,6 +183,21 @@ public class SwingApp extends JFrame {
         }
     }
 
+    private void setupWithRegistration(Registration registration) {
+        LocalDate expirationLicenseDate = registration.getExpirationLicenseDate();
+        if (registration.isLicenseValid()) {
+            initRunnableGUI(expirationLicenseDate);
+        } else {
+            initExpiredDateGUI(expirationLicenseDate);
+        }
+    }
+
+    private void initNoRunGUI() {
+        licenseLabel.setText("Client ID unknown");
+        licenseLabel.setForeground(Color.RED);
+        runButton.setEnabled(false);
+    }
+
     private void initRunnableGUI(LocalDate expirationDate) {
         licenseLabel.setText("License is valid until: " + expirationDate);
         licenseLabel.setForeground(Color.BLUE);
@@ -196,12 +206,6 @@ public class SwingApp extends JFrame {
 
     private void initExpiredDateGUI(LocalDate expirationDate) {
         licenseLabel.setText("License expired: " + expirationDate);
-        licenseLabel.setForeground(Color.RED);
-        runButton.setEnabled(false);
-    }
-
-    private void initNoRunGUI() {
-        licenseLabel.setText("Client ID unknown");
         licenseLabel.setForeground(Color.RED);
         runButton.setEnabled(false);
     }
