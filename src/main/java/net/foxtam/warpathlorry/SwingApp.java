@@ -23,10 +23,10 @@ public class SwingApp extends JFrame {
         }
     }
 
-    private final JButton runButton;
+    private final JButton startBotButton;
     private final JLabel infoLabel;
     private final JTextField pauseTextField;
-    private final Stopwatch timer;
+    private final Stopwatch stopwatch;
     private final JButton copyIdButton;
     private final JLabel pauseLabel;
     private final JLabel licenseLabel;
@@ -76,10 +76,10 @@ public class SwingApp extends JFrame {
         pauseTextField.setHorizontalAlignment(SwingConstants.RIGHT);
         mainPanel.add(pauseTextField);
 
-        runButton = new JButton("Wait server response...");
-        runButton.addActionListener(this::botWorker);
-        runButton.setEnabled(false);
-        mainPanel.add(runButton);
+        startBotButton = new JButton("Wait server response...");
+        startBotButton.addActionListener(this::botWorker);
+        startBotButton.setEnabled(false);
+        mainPanel.add(startBotButton);
 
         licenseLabel = new JLabel();
         mainPanel.add(licenseLabel);
@@ -93,7 +93,7 @@ public class SwingApp extends JFrame {
         englishMenuItem.addActionListener(e -> setupEnglishGUI());
         russianMenuItem.addActionListener(e -> setupRussianGUI());
 
-        timer = new Stopwatch(time -> timerLabel.setText(time.toString()));
+        stopwatch = new Stopwatch(time -> timerLabel.setText(time.toString()));
 
         setupEnglishGUI();
         setVisible(true);
@@ -112,15 +112,15 @@ public class SwingApp extends JFrame {
         double pauseInMinutes = Double.parseDouble(pauseTextField.getText());
         new BotThread(
                 pauseInMinutes,
-                timer::switchState,
-                timer::stop,
+                stopwatch::switchState,
+                stopwatch::stop,
                 () -> {
-                    timer.restart();
-                    runButton.setEnabled(false);
+                    stopwatch.restart();
+                    startBotButton.setEnabled(false);
                 },
                 () -> {
-                    timer.stop();
-                    runButton.setEnabled(true);
+                    stopwatch.stop();
+                    startBotButton.setEnabled(true);
                 }
         ).start();
     }
@@ -130,7 +130,7 @@ public class SwingApp extends JFrame {
         copyIdButton.setText("Copy ID");
         pauseLabel.setText("Pause between cycles (minutes):");
         runButtonTitle = "Start";
-        runButton.setText(runButtonTitle);
+        startBotButton.setText(runButtonTitle);
     }
 
     private void setupRussianGUI() {
@@ -138,7 +138,7 @@ public class SwingApp extends JFrame {
         copyIdButton.setText("Копировать ID");
         pauseLabel.setText("Пауза между обходами (в минутах):");
         runButtonTitle = "Старт";
-        runButton.setText(runButtonTitle);
+        startBotButton.setText(runButtonTitle);
     }
 
     private void setupGUIWithPermission() {
@@ -167,7 +167,7 @@ public class SwingApp extends JFrame {
         } else {
             initNoRunGUI();
         }
-        runButton.setText(runButtonTitle);
+        startBotButton.setText(runButtonTitle);
     }
 
     private void tryCheckNewVersion() {
@@ -195,18 +195,18 @@ public class SwingApp extends JFrame {
     private void initNoRunGUI() {
         licenseLabel.setText("Client ID unknown");
         licenseLabel.setForeground(Color.RED);
-        runButton.setEnabled(false);
+        startBotButton.setEnabled(false);
     }
 
     private void initRunnableGUI(LocalDate expirationDate) {
         licenseLabel.setText("License is valid until: " + expirationDate);
         licenseLabel.setForeground(Color.BLUE);
-        runButton.setEnabled(true);
+        startBotButton.setEnabled(true);
     }
 
     private void initExpiredDateGUI(LocalDate expirationDate) {
         licenseLabel.setText("License expired: " + expirationDate);
         licenseLabel.setForeground(Color.RED);
-        runButton.setEnabled(false);
+        startBotButton.setEnabled(false);
     }
 }
