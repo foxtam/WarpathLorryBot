@@ -104,10 +104,9 @@ public class WarpathBot extends Bot implements Runnable {
             finder.leftClickOn(deployButton);
             chooseDestinationType();
             levelChooser.run();
-
             finder.leftClickOn(searchButton);
             lowerLevelIfNoDetect();
-
+            sleep(1);
             clickOnDestinationTown();
             dispatchSure();
             exit();
@@ -122,15 +121,14 @@ public class WarpathBot extends Bot implements Runnable {
         }
 
         private void clickOnDestinationTown() {
-            sleep(1.5);
             leftClickAt(getWindowCenterPoint().shift(-20, 20));
         }
 
         private void lowerLevelIfNoDetect() {
             while (finder.withTime(1).isImageVisible(noDetectedNearby)) {
+                sleep(1.5);
                 finder.leftClickOn(minusLvlButton);
                 finder.leftClickOn(searchButton);
-                sleep(1.5);
             }
         }
 
