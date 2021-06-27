@@ -12,7 +12,7 @@ import static net.foxtam.warpathlorry.UrlUtil.toURL;
 
 public class Registration {
 
-    private static final URL remoteClientsFile = toURL("https://garantmarket.net/warpath/warpath_clients.json");
+    private static final URL remoteClientsFile = toURL("https://garantmarket.net/warpathbot/warpath_clients.json");
     private static final URL localClientsFile = toURL(Path.of("warpath_clients.json"));
     private final LocalDate expirationDate;
     private final boolean hasRegistration;

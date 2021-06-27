@@ -10,7 +10,7 @@ import static net.foxtam.warpathlorry.UrlUtil.toURL;
 
 public class WarpathServer {
 
-    private static final URL remoteVersionFile = toURL("https://garantmarket.net/warpath/warpath_last_version.json");
+    private static final URL remoteVersionFile = toURL("https://garantmarket.net/warpathbot/warpath_last_version.json");
     private static final URL localVersionFile = toURL(Path.of("warpath_last_version.json"));
 
     public static Registration getRegistrationInfoFor(ComputerID computerID) {
