@@ -203,7 +203,7 @@ public class WarpathBot extends Bot implements Runnable {
 
             shiftProductsToRight();
             for (Image[] workshop : workshops) {
-                if (frame.withTimeLimit(0.1).isAnyImageVisible(workshop)) {
+                if (frame.withTimeLimit(0.1).withTolerance(0.9).isAnyImageVisible(workshop)) {
                     tapNextWorkshop(workshop);
                     oneTapToRight();
                     orderProduct();
@@ -235,7 +235,7 @@ public class WarpathBot extends Bot implements Runnable {
 
         private void tapNextWorkshop(Image[] workshopImages) {
             enter((Object[]) workshopImages);
-            frame.leftClickAnyImage(workshopImages);
+            frame.withTolerance(0.9).leftClickAnyImage(workshopImages);
             exit();
         }
 
