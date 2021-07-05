@@ -10,8 +10,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.time.LocalDate;
 
-import static net.foxtam.foxclicker.GlobalLogger.enter;
-import static net.foxtam.foxclicker.GlobalLogger.exit;
+import static net.foxtam.foxclicker.GlobalLogger.*;
 
 public class SwingApp extends JFrame {
 
@@ -25,22 +24,28 @@ public class SwingApp extends JFrame {
 
     private final JButton startBotButton;
     private final JLabel infoLabel;
-    private final JTextField pauseTextField;
+    private final JTextField bypassPauseTextField;
     private final Stopwatch stopwatch;
     private final JButton copyIdButton;
-    private final JLabel pauseLabel;
+    private final JLabel bypassPauseLabel;
     private final JLabel licenseLabel;
+    private final JLabel alreadyLoggedPauseLabel;
+    private final JTextField alreadyLoggedPauseTextField;
 
     private String runButtonTitle;
+    private String clientIdUnknownText;
+    private String licenseIsValidText;
+    private String licenseExpiredText;
 
     public SwingApp() {
         super("Warpath Bot - " + App.getAppCurrentVersion());
         enter();
+        trace("Bot version: " + App.getAppCurrentVersion());
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(290, 360);
+        setSize(320, 420);
         setLocationRelativeTo(null);
-        setResizable(false);
+//        setResizable(false);
 
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -68,13 +73,20 @@ public class SwingApp extends JFrame {
         copyIdButton.addActionListener(this::clipBoardListener);
         mainPanel.add(copyIdButton);
 
-        pauseLabel = new JLabel();
-        pauseLabel.setVerticalAlignment(SwingConstants.BOTTOM);
-        mainPanel.add(pauseLabel);
+        bypassPauseLabel = new JLabel();
+        bypassPauseLabel.setVerticalAlignment(SwingConstants.BOTTOM);
+        mainPanel.add(bypassPauseLabel);
 
-        pauseTextField = new JTextField("1.0");
-        pauseTextField.setHorizontalAlignment(SwingConstants.RIGHT);
-        mainPanel.add(pauseTextField);
+        bypassPauseTextField = new JTextField("1.0");
+        bypassPauseTextField.setHorizontalAlignment(SwingConstants.RIGHT);
+        mainPanel.add(bypassPauseTextField);
+
+        alreadyLoggedPauseLabel = new JLabel();
+        mainPanel.add(alreadyLoggedPauseLabel);
+
+        alreadyLoggedPauseTextField = new JTextField("1.0");
+        alreadyLoggedPauseTextField.setHorizontalAlignment(SwingConstants.RIGHT);
+        mainPanel.add(alreadyLoggedPauseTextField);
 
         startBotButton = new JButton("Wait server response...");
         startBotButton.addActionListener(this::botWorker);
@@ -109,9 +121,11 @@ public class SwingApp extends JFrame {
     }
 
     private void botWorker(ActionEvent e) {
-        double pauseInMinutes = Double.parseDouble(pauseTextField.getText());
+        double bypassPauseInMinutes = Double.parseDouble(bypassPauseTextField.getText());
+        double alreadyLoggedPauseInMinutes = Double.parseDouble(alreadyLoggedPauseTextField.getText());
         new BotThread(
-                pauseInMinutes,
+                bypassPauseInMinutes,
+                alreadyLoggedPauseInMinutes,
                 stopwatch::switchState,
                 stopwatch::stop,
                 () -> {
@@ -128,15 +142,18 @@ public class SwingApp extends JFrame {
     private void setupEnglishGUI() {
         infoLabel.setText("<html>Pause bot on/off: F4<br>Stop bot: F8</html>");
         copyIdButton.setText("Copy ID");
-        pauseLabel.setText("Pause between cycles (minutes):");
+        bypassPauseLabel.setText("Pause between cycles (minutes):");
+        alreadyLoggedPauseLabel.setText("Pause after \"Already logged...\" message (minutes):");
         runButtonTitle = "Start";
         startBotButton.setText(runButtonTitle);
+
     }
 
     private void setupRussianGUI() {
         infoLabel.setText("<html>Установить/снять паузу: F4<br>Остановить бота: F8</html>");
         copyIdButton.setText("Копировать ID");
-        pauseLabel.setText("Пауза между обходами (в минутах):");
+        bypassPauseLabel.setText("Пауза между обходами (в минутах):");
+        alreadyLoggedPauseLabel.setText("Пауза после сообщения о входе на другом устройстве (в минутах):");
         runButtonTitle = "Старт";
         startBotButton.setText(runButtonTitle);
     }

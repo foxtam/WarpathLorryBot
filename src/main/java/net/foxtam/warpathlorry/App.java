@@ -19,6 +19,7 @@ public class App {
         try {
             SwingUtilities.invokeAndWait(SwingApp::new);
         } catch (Exception e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(null, e.toString());
         }
         exit();
