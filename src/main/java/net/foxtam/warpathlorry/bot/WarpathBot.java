@@ -26,7 +26,7 @@ public class WarpathBot extends Bot implements Runnable {
 
     public WarpathBot(double bypassPauseInMinutes, double alreadyLoggedPauseInMinutes, Runnable onStop, Runnable onPause) {
         super(KeyConfig.getDefault(), onStop, onPause);
-        enter(bypassPauseInMinutes);
+        enter(bypassPauseInMinutes, alreadyLoggedPauseInMinutes);
         this.alreadyLoggedPauseInMinutes = alreadyLoggedPauseInMinutes;
         this.bypassPauseInMinutes = bypassPauseInMinutes;
         this.frame = getCheckFrame();
