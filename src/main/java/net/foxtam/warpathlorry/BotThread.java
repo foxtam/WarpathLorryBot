@@ -24,7 +24,8 @@ public class BotThread extends Thread {
     public void run() {
         try {
             runBefore.run();
-            new WarpathBot(bypassPauseInMinutes, alreadyLoggedPauseInMinutes, onStop, onPause).run();
+            WarpathBot bot = new WarpathBot(bypassPauseInMinutes, alreadyLoggedPauseInMinutes, onStop, onPause);
+            bot.run();
         } catch (Exception e) {
             GlobalLogger.trace(e);
             App.showErrorMessage(e.getMessage());

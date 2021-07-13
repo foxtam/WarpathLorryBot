@@ -14,7 +14,6 @@ import static net.foxtam.warpathlorry.bot.Images.*;
 public class WarpathBot extends Bot implements Runnable {
 
     private static final String windowTitle = "NoxPlayer";
-    ;
     private static final double defaultTimeLimit = 4;
     private static final double defaultTolerance = 0.85;
     private static final boolean defaultInColor = false;
@@ -113,13 +112,10 @@ public class WarpathBot extends Bot implements Runnable {
 
         private void openBottomLorryWindow() {
             enter();
-            for (int i = 0; i < 2; i++) {
-                if (!frame.withTimeLimit(0.5).isImageVisible(lorry)) {
-                    frame.leftClickOn(lorryMainButton);
-                    sleep(0.5);
-                }
+            while (!frame.withTimeLimit(1).isImageVisible(lorry)) {
+                frame.leftClickOn(lorryMainButton);
+                sleep(0.5);
             }
-            frame.waitForImage(lorry);
             exit();
         }
 
