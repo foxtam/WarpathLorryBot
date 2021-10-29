@@ -1,7 +1,9 @@
 package net.foxtam.warpathlorry.bot;
 
 
+import com.sun.jna.platform.win32.WinDef;
 import net.foxtam.foxclicker.*;
+import net.foxtam.foxclicker.context.Context;
 import net.foxtam.warpathlorry.bot.exceptions.AlreadyLoggedReset;
 import net.foxtam.warpathlorry.bot.exceptions.ChooseDestinationException;
 
@@ -18,29 +20,30 @@ public class WarpathBot extends Bot implements Runnable {
     private static final double defaultTolerance = 0.85;
     private static final boolean defaultInColor = false;
 
-    private final Frame noCheckFrame = getNoCheckFrame();
-    private final Frame frame;
-
     private final double bypassPauseInMinutes;
     private final double alreadyLoggedPauseInMinutes;
+
+    private final Frame noCheckFrame =
+            createFrame(Context.background(getHWND(), List.of()), defaultTimeLimit, defaultTolerance, defaultInColor);
+    private final Frame frame =
+            createFrame(Context.background(getHWND(), getChecks()), defaultTimeLimit, defaultTolerance, defaultInColor);
 
     public WarpathBot(double bypassPauseInMinutes, double alreadyLoggedPauseInMinutes, Runnable onStop, Runnable onPause) {
         super(KeyConfig.getDefault(), onStop, onPause);
         enter(bypassPauseInMinutes, alreadyLoggedPauseInMinutes);
         this.alreadyLoggedPauseInMinutes = alreadyLoggedPauseInMinutes;
         this.bypassPauseInMinutes = bypassPauseInMinutes;
-        this.frame = getCheckFrame();
         exit();
     }
 
-    private Frame getCheckFrame() {
-        CheckScreen screen = CheckScreen.of(getChecks(), defaultTolerance, defaultInColor);
-        return noCheckFrame.withWindow(noCheckFrame.getWindow().withScreen(screen));
+    private WinDef.HWND getHWND() {
+        return User32.INSTANCE.FindWindow(null, windowTitle);
     }
 
     private List<Pair<Image, Runnable>> getChecks() {
         return List.of(
-                Pair.of(alreadyLogged, this::alreadyLoggedProcessing)
+                Pair.of(alreadyLoggedEn, this::alreadyLoggedProcessing),
+                Pair.of(alreadyLoggedRu, this::alreadyLoggedProcessing)
         );
     }
 
@@ -49,14 +52,6 @@ public class WarpathBot extends Bot implements Runnable {
         noCheckFrame.leftClickOn(alreadyLoggedOkButton);
         frame.withTimeLimit(180).waitForImage(lorryMainButton);
         throw new AlreadyLoggedReset();
-    }
-
-    private Frame getNoCheckFrame() {
-        return createFrame(
-                Window.getByTitle(windowTitle, LoggedScreen.getInstance()),
-                defaultTimeLimit,
-                defaultTolerance,
-                defaultInColor);
     }
 
     @Override
@@ -100,10 +95,10 @@ public class WarpathBot extends Bot implements Runnable {
         private boolean sendLorryOrStopDeploy(Runnable levelChooser) throws ChooseDestinationException {
             enter();
             openBottomLorryWindow();
-            Image button = frame.waitForAnyImage(deployButton, recallLorryButton);
-            if (button == deployButton) {
+            Image button = frame.waitForAnyImage(deployButtonEn, deployButtonRu, recallLorryButtonEn, recallLorryButtonRu);
+            if (button == deployButtonEn || button == deployButtonRu) {
                 sendLorry(levelChooser);
-            } else if (button == recallLorryButton) {
+            } else if (button == recallLorryButtonEn || button == recallLorryButtonRu) {
                 hideBottomLorryWindow();
                 return exit(true);
             }
@@ -121,10 +116,10 @@ public class WarpathBot extends Bot implements Runnable {
 
         private void sendLorry(Runnable levelChooser) throws ChooseDestinationException {
             enter();
-            frame.leftClickOn(deployButton);
+            frame.leftClickAnyImage(deployButtonEn, deployButtonRu);
             chooseDestinationType();
             levelChooser.run();
-            frame.leftClickOn(searchButton);
+            frame.leftClickAnyImage(searchButtonPack);
             lowerLevelIfNoDetect();
             sleep(1);
             clickOnDestinationTown();
@@ -145,10 +140,10 @@ public class WarpathBot extends Bot implements Runnable {
         }
 
         private void lowerLevelIfNoDetect() {
-            while (frame.withTimeLimit(1).isImageVisible(noDetectedNearby)) {
+            while (frame.withTimeLimit(1).isAnyImageVisible(noDetectedNearbyPack)) {
                 sleep(1.5);
                 frame.leftClickOn(minusLvlButton);
-                frame.leftClickOn(searchButton);
+                frame.leftClickAnyImage(searchButtonPack);
             }
         }
 
@@ -199,7 +194,7 @@ public class WarpathBot extends Bot implements Runnable {
 
             shiftProductsToRight();
             for (Image[] workshop : workshops) {
-                if (frame.withTimeLimit(0.1).withTolerance(0.9).isAnyImageVisible(workshop)) {
+                if (frame.withTimeLimit(0.5).withTolerance(0.9).isAnyImageVisible(workshop)) {
                     tapNextWorkshop(workshop);
                     oneTapToRight();
                     orderProduct();
@@ -244,15 +239,13 @@ public class WarpathBot extends Bot implements Runnable {
 
         private void orderProduct() {
             enter();
-            if (frame.isImageVisible(produceGreenButton)) {
-                ScreenPoint productGreenButtonPoint = frame.getCenterPointOf(produceGreenButton);
-                while (frame
-                        .withInColor(true)
-                        .withTolerance(0.91)
-                        .withTimeLimit(2)
-                        .isImageVisible(whiteSlash)) {
+            if (frame.isAnyImageVisible(produceGreenButtonPack)) {
+                Image image = frame.waitForAnyImage(produceGreenButtonPack);
+                ScreenPoint productGreenButtonPoint = frame.getCenterPointOf(image);
+                Frame whiteSlashFrame = frame.withInColor(true).withTolerance(0.95).withTimeLimit(2);
+                while (whiteSlashFrame.isAnyImageVisible(whiteSlashPack)) {
                     for (int i = 0; i < 5; i++) {
-                        frame.leftClickAt(productGreenButtonPoint);
+                        WarpathBot.this.frame.leftClickAt(productGreenButtonPoint);
                         sleep(0.02);
                     }
                 }
