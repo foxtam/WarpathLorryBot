@@ -6,7 +6,7 @@
 
     <groupId>net.foxtam</groupId>
     <artifactId>WarpathLorryBot</artifactId>
-    <version>0.7.3</version>
+    <version>0.8.1</version>
 
     <name>WarpathLorryBot</name>
     <!-- FIXME change it to the project's website -->
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>net.foxtam</groupId>
             <artifactId>FoxClicker</artifactId>
-            <version>0.3.1</version>
+            <version>0.4.0</version>
         </dependency>
         
         <dependency>
