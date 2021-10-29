@@ -111,6 +111,14 @@ public class SwingApp extends JFrame {
         setVisible(true);
         SwingUtilities.invokeLater(this::setupGUIWithPermission);
         SwingUtilities.invokeLater(this::checkNewVersion);
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Демо версия завершит работу через 20 минут",
+                "Info",
+                JOptionPane.INFORMATION_MESSAGE);
+        new Thread(new KillBot()).start();
+        
         exit();
     }
 
